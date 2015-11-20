@@ -13,7 +13,10 @@ db.serialize(function() {
 
 	// creates a table in the database if it doesn't already exist
 	db.run("CREATE TABLE if not exists users_table "+
-		"(username TEXT,password TEXT)");
+		"(username TEXT NOT NULL,password TEXT NOT NULL,PRIMARY KEY (username))");
+
+	db.run("CREATE TABLE if not exists places_table "+
+		"(username TEXT NOT NULL,place TEXT NOT NULL, CONSTRAINT place_primary PRIMARY KEY (username,place))");
 
 	// Reading user login attempts
 	app.get('/users/*', function (req, res) {
@@ -51,24 +54,49 @@ db.serialize(function() {
 		var resultString = "";
 
 		if (!myUsername && !myPassword){
-			resultString = "Enter the required fieldsN";
+			res.send("Enter the required fieldsN");
 		} else if (!myUsername){
-			resultString = "Enter your usernameN";
+			res.send("Enter your usernameN");
 		} else if (!myPassword){
-			resultString = "Enter your passwordN";
+			res.send("Enter your passwordN");
 		} else {
 			// making sure username and passwords are valid
 			if (myPassword.length < 7){
-				resultString = "Your password must be longer than 7 characters";
+				res.send("Your password must be longer than 7 characters");
 			} else {
-				db.run("INSERT INTO users_table VALUES (?,?)",[myUsername,myPassword]);
-				resultString = "Your created a new account!Y";				
+				
+				db.run("INSERT INTO users_table VALUES (?,?)",[myUsername,myPassword], function(err, row) {
+					if (err != null){
+						res.send("Failed to create new accountN");
+					} else {
+						res.send("Your created a new account!Y");
+					}
+				});	
 			}
 		}
-		res.send(resultString);
 	});
 });
 
+	// Reading user login attempts
+	app.post('/places/', function (req, res) {
+		var postBody = req.body;
+		var place = postBody.place.trim();
+		var username =  postBody.username.trim();
+
+		if (!place){
+			res.send("Enter a place");
+		}
+		else {
+			console.log("place");
+			db.run("INSERT INTO places_table VALUES (?,?)",[username, place], function(err, row) {
+				if (err != null){
+					res.send("Failed to add place");
+				} else {
+					res.send("Place added!");
+				}
+			});	
+		}
+	});
 
 // starting web server
 var server = app.listen(3000, function () {
