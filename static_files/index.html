@@ -14,7 +14,7 @@ This is the html that is displayed in the  web browser. It includes jQuery that 
 <script type="text/javascript">
 
   // redirects to yelp.html if already logged in
-  if (sessionStorage['logged_in']){
+  if (localStorage['logged_in']){
     window.location = "yelp.html";
   }
 
@@ -32,15 +32,12 @@ $(document).ready(function() {
               password: $("#passwordField").val(),
              },
       success: function(data) {
-
-        console.log("blah: "+data);
-
         var lastChar = data[data.length-1]; 
 
         if (lastChar == "Y"){
           console.log("new page");
           window.location = "yelp.html";
-          sessionStorage["logged_in"] = $("#usernameField").val();
+          localStorage["logged_in"] = $("#usernameField").val();
         } else {
               // displaying all but the last char
              $("#status").html(data.substring(0,data.length-1)); 
@@ -52,7 +49,7 @@ $(document).ready(function() {
   $("#createNewAccount").click(function() { // create new account button is clicked
     $.ajax({
       url: "/users",
-      type: "POST",
+      type: "POST", 
       dataType : "text",
       data : { username: $("#usernameField").val(),
                password: $("#passwordField").val(),
