@@ -1,6 +1,6 @@
 
 <!--
-This page can only be accessed if the client's browser has a 'logged_in' sessionStorage key, created by signing in using a valid username and password
+This page can only be accessed if the client's browser has a 'logged_in' localStorage key, created by signing in using a valid username and password
 -->
 
 <head>
@@ -13,24 +13,43 @@ This page can only be accessed if the client's browser has a 'logged_in' session
 
 <script type="text/javascript">
   // redirects page to login page if not logged in
-  if (!sessionStorage['logged_in']){
-    window.location = "/";
-  } 
+
+    if (!localStorage['logged_in']){
+      window.location = "/";
+    } 
 
   $(document).ready(function() {
 
     // writing hello message to screen
-    $("#hello").html("Hello, " + sessionStorage['logged_in']);
+    $("#hello").html("Hello, " + localStorage['logged_in']);
 
     // putting in string on Sign out button
-    $("#signout").html("Sign out of " + sessionStorage['logged_in']);
+    $("#logout").html("Sign out of " + localStorage['logged_in']);
 
     // Sign out button functionality
-    $("#signout").click(function() {
-      sessionStorage.removeItem('logged_in');
+    $("#logout").click(function() {
+      localStorage.removeItem('logged_in');
       window.location = "/";
     });
+
+ $("#add").click(function() { // when add button is clicked
+    $.ajax({
+      url: "/places/", // REST principles
+      type: "POST",
+      dataType: "text", 
+      data: {
+        place: $("#addPlaceField").val(),
+        username : localStorage['logged_in']
+        },
+
+      success: function(data) {
+         $("#addPlaceField").val("");
+         $("#outputOfPlace").html(data); 
+
+      },
+    });
   });
+ });
 
 </script>
 
@@ -40,9 +59,15 @@ This page can only be accessed if the client's browser has a 'logged_in' session
 
   <h2 id="hello"></h2>
 
-  <p>This is where the web page will be displayed</p>
+  <p>
+    <h3>Add new place visited: </h3>
+    &nbsp; <input id="addPlaceField" type="text" size="20"/>
+    <button id="add">Add</button>
+  </p>
 
-  <button id="signout"></button>
+  <div id="outputOfPlace"></div>
+
+  <button id="logout"></button>
 
   </body>
 </html>
