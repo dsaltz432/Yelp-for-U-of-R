@@ -8,6 +8,10 @@ db.serialize(function() {
 		console.log(row.id + ": Username: " + row.username +
 		 "   Password: " + row.password);
 	});
+	db.each("SELECT rowid AS id, username, place FROM places_table", function(err, row) {
+		console.log(row.id + ": Username: " + row.username +
+		 "   place: " + row.place);
+	});
 });
 
 db.close();
