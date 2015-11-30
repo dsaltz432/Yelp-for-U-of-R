@@ -39,11 +39,17 @@ This page can only be accessed if the client's browser has a 'logged_in' localSt
       dataType: "text", 
       data: {
         place: $("#addPlaceField").val(),
-        username : localStorage['logged_in']
+        username : localStorage['logged_in'],
+        rating: $("#rating").val(),
+        cost: $("#cost").val(),
+        comment: $("#comment").val()
         },
 
       success: function(data) {
          $("#addPlaceField").val("");
+         $("#rating").val("");
+         $("#cost").val("");
+         $("#comment").val("");
          $("#outputOfPlace").html(data); 
 
       },
@@ -67,7 +73,7 @@ This page can only be accessed if the client's browser has a 'logged_in' localSt
 
     <br /> <br />
     Rating out of 5 stars: <br />
-    <select>
+    <select id="rating">
       <option value="1star">1 Star</option>
       <option value="2star">2 Stars</option>
       <option value="3star">3 Stars</option>
@@ -77,7 +83,7 @@ This page can only be accessed if the client's browser has a 'logged_in' localSt
 
     <br /> <br />
     Cost: <br />
-    <select>
+    <select id="cost">
       <option value="1$">$</option>
       <option value="2$">$$</option>
       <option value="3$">$$$</option>
@@ -86,7 +92,7 @@ This page can only be accessed if the client's browser has a 'logged_in' localSt
 
     <br /> <br />
     Comment: <br />
-    &nbsp; <textarea id="addCommentField" type="text" style="width: 350px; height:100px"> </textarea> <br />
+    &nbsp; <textarea id="comment" type="text" style="width: 350px; height:100px"> </textarea> <br />
     <button id="add">Add New Place</button>
   </p>
 
