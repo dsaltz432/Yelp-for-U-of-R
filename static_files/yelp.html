@@ -60,10 +60,37 @@ This page can only be accessed if the client's browser has a 'logged_in' localSt
   <h2 id="hello"></h2>
 
   <p>
-    <h3>Add new place visited: </h3>
+    <h4>Add A New Place: </h4>
+
+    Name: <br />
     &nbsp; <input id="addPlaceField" type="text" size="20"/>
-    <button id="add">Add</button>
+
+    <br /> <br />
+    Rating out of 5 stars: <br />
+    <select>
+      <option value="1star">1 Star</option>
+      <option value="2star">2 Stars</option>
+      <option value="3star">3 Stars</option>
+      <option value="4star">4 Stars</option>
+      <option value="5star">5 Stars</option>
+    </select>
+
+    <br /> <br />
+    Cost: <br />
+    <select>
+      <option value="1$">$</option>
+      <option value="2$">$$</option>
+      <option value="3$">$$$</option>
+      <option value="4$">$$$$</option>
+    </select>
+
+    <br /> <br />
+    Comment: <br />
+    &nbsp; <textarea id="addCommentField" type="text" style="width: 350px; height:100px"> </textarea> <br />
+    <button id="add">Add New Place</button>
   </p>
+
+
 
   <div id="outputOfPlace"></div>
 
