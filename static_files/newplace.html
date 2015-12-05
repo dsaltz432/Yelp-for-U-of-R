@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<head>
+<title>Yelp for U of R</title>
+
+<!-- include jQuery, bootstrap, and MyStyles --> 
+<script src="jquery-1.11.3.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="css/MainStyles.css">
+<link rel="stylesheet" type="text/css" href="css/NewPlace.css">
+<script src = "PagewideJS.js"></script>
+
+
+<script>
+
+  // redirects page to login page if not logged in
+    if (!sessionStorage['logged_in']){
+      window.location = "/accounts.html";
+    } 
+
+  $(document).ready(function() {
+
+
+/***********************************************
+      Ajax requests to the server
+************************************************/
+
+// "Add" button clicked
+ $("#add").click(function() {
+    $.ajax({
+      url: "/places/",
+      type: "POST",
+      dataType: "text", 
+      data: {
+        place: $("#place").val(),
+        username : sessionStorage['logged_in'],
+        rating: $("#rating").val(),
+        cost: $("#cost").val(),
+        comment: $("#comment").val()
+        },
+      success: function(data) {
+        var lastChar = data[data.length-1]; 
+        if (lastChar != "N"){
+          $("#place").val("");
+          $("#rating").val("");
+          $("#cost").val("");
+          $("#comment").val("");
+          $("#status").css("color","green");
+        }
+        $("#status").html(data.substring(0,data.length-1)); 
+      },
+    });
+  });
+ });
+
+</script>
+
+</head>
+  <body>
+
+ <div id="wrap">
+    <div id="header_bar">
+    <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
+
+      <!-- creating a search bar through bootstrap -->
+      <div class="input-group" id="search_bar">
+        <input id="search" type="text" class="form-control" placeholder="Search for a place...">
+        <div id="go" class="input-group-btn">
+          <button class="btn btn-default" type="button">Go!</button>
+        </div>
+      </div>
+
+    <!-- Sign up, login, logout buttons -->
+      <div id="buttons">
+        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
+        <h2 id="hello"></h2>
+        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
+        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
+        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="container"> 
+  <h3 id="title">Write a Review</h3>
+  <div id="content">
+    <div id="place_div">
+      Place: <input id="place" type="text" size="20"/>
+    </div>
+    <div id="rating_div">
+      Rating:  
+      <select id="rating">
+        <option value=""></option>
+        <option value="0star">0 Stars</option>
+        <option value="1star">1 Star</option>
+        <option value="2star">2 Stars</option>
+        <option value="3star">3 Stars</option>
+        <option value="4star">4 Stars</option>
+        <option value="5star">5 Stars</option>
+      </select>
+    </div>
+    <div id="cost_div">
+      Cost:  
+      <select id="cost">
+        <option value=""></option>
+        <option value="1$">$</option>
+        <option value="2$">$$</option>
+        <option value="3$">$$$</option>
+        <option value="4$">$$$$</option>
+      </select>
+    </div>
+    <div id="comment_div">
+      Comment: <br />
+      <textarea id="comment" type="text" style="width: 70%; height:15%"></textarea><br/>
+    </div>
+    <div id="buttons_div">
+      <a type="button" class="btn btn-primary" id="add">Add</a>
+      <a href="/" type="button" class="btn btn-primary">Home</a>
+    </div>
+
+    <div id="status"></div>
+  </div> <!-- end of content -->
+  </div>  <!-- end of container -->
+
+
+  </body>
+</html>

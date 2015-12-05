@@ -1,0 +1,7 @@
+#topPlaces ul .update, #topPlaces ul .delete {
+	margin-top: 10px;
+}
+
+#topPlaces ul .update{
+	margin-right: 8px;
+}

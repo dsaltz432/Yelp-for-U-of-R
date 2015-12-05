@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<head>
+<title>Yelp for U of R</title>
+
+<!-- include jQuery, bootstrap, and MyStyles --> 
+<script src="jquery-1.11.3.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="css/MainStyles.css">
+<link rel="stylesheet" type="text/css" href="css/AccountsStyles.css">
+<script src = "PagewideJS.js"></script>
+
+
+<script>
+
+  // redirects to homepage if logged in
+  if (sessionStorage['logged_in']){ 
+    window.location = "/";
+  }
+
+$(document).ready(function() {
+  
+/***********************************************
+      Ajax requests to the server
+************************************************/
+
+  // "Log In" clicked
+  $("#login").click(function() { // when login button is clicked
+    $.ajax({
+      url: "/users/" + $("#usernameField").val(),
+      type: "GET",
+      dataType: "text", 
+      data: { username: $("#usernameField").val(),
+              password: $("#passwordField").val(),
+             },
+      success: function(data) {
+        var lastChar = data[data.length-1]; 
+        if (lastChar == "Y"){
+          sessionStorage["logged_in"] = $("#usernameField").val(); 
+          window.location = "/";
+        } else {
+         $("#status").html(data.substring(0,data.length-1)); 
+        }
+      },
+    });
+   });
+
+   // "Sign Up" clicked
+    $("#signup").click(function() { 
+    $.ajax({
+      url: "/users",
+      type: "POST", 
+      dataType : "text",
+      data : { username: $("#usernameField").val(),
+               password: $("#passwordField").val(),
+             },
+      success: function(data) {
+        var lastChar = data[data.length-1];
+        if (lastChar == "Y"){
+            $("#passwordField").val("");
+            $("#usernameField").val("");    
+        } 
+        $("#status").html(data.substring(0,data.length-1)); 
+      },
+    });
+  });
+});
+
+</script>
+
+</head>
+  <body>
+
+<div id="wrap">
+    <div id="header_bar">
+    <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
+
+
+      <!-- creating a search bar through bootstrap -->
+      <div class="input-group" id="search_bar">
+        <input id="search" type="text" class="form-control" placeholder="Search for a place...">
+        <div id="go" class="input-group-btn">
+          <button class="btn btn-default" type="button">Go!</button>
+        </div>
+      </div>
+    </div>
+  </div> <!-- end wrap -->
+
+  <div id="container"> 
+  	<div id="username">Username: <input id="usernameField" type="text" size="20"/></div>
+  	<div id="password">Password: <input id="passwordField" type="password" size="20"/></div>
+
+  	<div id="buttons">
+      <button type="button" class="btn btn-primary btn-lg" id="signup">Create</button>
+      <br>
+  		<button type="button" class="btn btn-primary" id="login">Log In</button>
+  		<a href="/" type="button" class="btn btn-primary" id="home">Home</a>
+    </div>
+
+      <!-- outputs status for success or failure -->
+      <div id="status"></div>
+  </div>  <!-- end of container -->
+
+  </body>
+</html>
+ 
