@@ -1,90 +1,124 @@
+<!-- 
+-Used to dynamically create li items
+http://stackoverflow.com/questions/1145208/jquery-how-to-add-li-in-an-existing-ul
 
-<!--
-This is the html that is displayed in the  web browser. It includes jQuery that interact with the html elements and sends items to the server using Ajax
--->
+ -->
 
+<!DOCTYPE html>
 <head>
-<title>Yelp For U of R</title>
+<title>Yelp for U of R</title>
 
 <!-- include jQuery, bootstrap, and MyStyles --> 
-<script src="jquery-1.11.3.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" type="text/css" href="css/MyStyles.css">
+<link rel="stylesheet" type="text/css" href="css/MainStyles.css">
+<script src="jquery-1.11.3.min.js"></script>
+<script src = "PagewideJS.js"></script>
 
-<script type="text/javascript">
-
-  // redirects to yelp.html if already logged in
-  if (localStorage['logged_in']){
-    window.location = "yelp.html";
-  }
+<script>
 
 $(document).ready(function() {
-  $(document).ajaxError(function() { // generic Ajax error handler
-    alert("Sorry, there was a problem!");
+
+/***********************************************
+      Ajax requests to the server
+************************************************/
+
+  // runs when home page loads
+  $.ajax({
+    url: "/home",
+    type: "GET",
+    dataType: "json", 
+    success: function(data) {
+      outputRecentPlaces(data);
+      if (sessionStorage['logged_in']){
+        $("#review").css("display","inline-block");
+      }
+    },
   });
 
-  $("#login").click(function() { // when login button is clicked
+  // runs when a place link is clicked from the home page
+  $("#topPlaces").on('click','a',function(event) {
+    var clicked = event.target.id;
+    if (clicked.indexOf(0) != "#"){ // controlling how many # there are
+      clicked = "#" + clicked;
+    } 
+    var placeName = $(clicked).html();
     $.ajax({
-      url: "/users/" + $("#usernameField").val(), // REST principles
+      url: "/places/" + placeName,
       type: "GET",
-      dataType: "text", 
-      data: { username: $("#usernameField").val(),
-              password: $("#passwordField").val(),
-             },
+      dataType: "json", 
       success: function(data) {
-        var lastChar = data[data.length-1]; 
-
-        if (lastChar == "Y"){
-          console.log("new page");
-          window.location = "yelp.html";
-          localStorage["logged_in"] = $("#usernameField").val();
-        } else {
-              // displaying all but the last char
-             $("#status").html(data.substring(0,data.length-1)); 
-        }
+        $('#popular').html("Reviews of " + placeName);
+        $('#topPlaces').empty();
+        $("#popular").html("Recent Reviews of " + placeName);
+        outputRecentPlaces(data);
       },
     });
   });
 
-  $("#createNewAccount").click(function() { // create new account button is clicked
-    $.ajax({
-      url: "/users",
-      type: "POST", 
-      dataType : "text",
-      data : { username: $("#usernameField").val(),
-               password: $("#passwordField").val(),
-             },
-      success: function(data) {
-        var lastChar = data[data.length-1];
-        if (lastChar == "Y"){
-            // clearing the fields once the account is created
-            $("#passwordField").val("");
-            $("#usernameField").val("");    
-        } 
-      // displaying all but the last char
-      $("#status").html(data.substring(0,data.length-1)); 
-      },
-    });
-  });
+
+/***********************************************
+     Dynamically generate HTML
+************************************************/
+
+function outputRecentPlaces(data){
+  for (var i = data.length-1; i >= 0; i--){
+    var e = data[i];
+    var placeID = "placeLink" + i;
+    $('#topPlaces').append(
+      "<div class='comment_block'>"+
+      "<ul class= = 'list_ul'>" +
+        "<li class='list_username'>" + e.username + "</li>" +
+        "<li class='list_place'>wrote a review for " + 
+        "<a id="+placeID+">"+e.place+"</a>" + "</li><br>" +
+        "<img class='list_rating' src="+getCurrentStarURL(e.rating)+">" +
+        "<img class='list_cost' src="+getCurrentCostURL(e.cost)+">" + 
+        "<li class='list_time'>" + e.time + "</li>" +  
+        "<div><li class='list_comment'>"+ e.comment + "</li></div>" +
+      "</ul>"+
+      "</div>"
+      );
+  }
+}
+
+
 });
+
 </script>
 
 </head>
   <body>
-  
-  <h1 id="title">Yelp for U of R</h1>
+ 
+ <div id="wrap">
+    <div id="header_bar">
+      <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
 
-    <p>
-    Username: <input id="usernameField" type="text" size="20"/>
-    Password: <input id="passwordField" type="password" size="20"/>
-    </p>
+      <!-- creating a search bar through bootstrap -->
+      <div class="input-group" id="search_bar">
+        <input id="search" type="text" class="form-control" placeholder="Search for a place...">
+        <div id="go" class="input-group-btn">
+          <button class="btn btn-default" type="button">Go!</button>
+        </div>
+      </div>
 
-    <p>
-    <button id="login">Login</button>
-    <button id="createNewAccount">Create New Account</button>
-    </p>
+    <!-- Sign up, login, logout buttons -->
+      <div id="buttons">
+        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
+        <h2 id="hello"></h2>
+        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
+        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
+        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
+      </div>
+    </div>
+  </div>
 
-    <hr/>
-    <div id="status"></div>
+  <div id="container"> 
+    <h3 id="popular">Recenet Reviews</h3>
+    <a href="/newplace.html" type="button" class="btn btn-primary btn-lg" id="review" style="display:none;">Write a Review</a>
+
+    <!-- Dynamically outputs the list of places -->
+      <ul id="topPlaces"></ul>
+
+  </div>  <!-- end of container -->
+
   </body>
 </html>
