@@ -64,17 +64,16 @@ $(document).ready(function() {
 // "Update Review" clicked
   $("#topPlaces").on('click','.update',function(event) {
     var clicked = event.target.id;
-    var clicked = clicked.replace("*****"," ");
     var lastChar = clicked[clicked.length-1];
     var myTime = dict[lastChar];
-    var myPlace = clicked.substring(0,clicked.length-1);
+    var args=clicked.split("*");
+    var myUsername = myUsername=args[0];
+    var myPlace = myPlace=args[1].replace("#"," ");
+    
     var id = "#commentBlockID"+parseInt(lastChar);
     $(".hidden_place").attr("id",myPlace);
     $(".hidden_time").attr("id",myTime);
-    // $(".hidden_comment_block").attr("id",id);
-
     $("#hidden_form").insertAfter(id);
-    // $(id).remove();
     $(id).attr("display:none;");
 
     $.ajax({
@@ -83,7 +82,7 @@ $(document).ready(function() {
       dataType: "json", 
       data : {
         time: myTime,
-        place: myPlace,
+        username: myUsername,
       },
       success: function(data) {
         var e = data[0];
@@ -100,14 +99,10 @@ $(document).ready(function() {
 
   // "Update" button clicked inside the update form
    $("#update").click(function() {
-
-// console.log($(".hidden_time").attr("id"));
-// console.log($(".hidden_place").attr("id"));
-
       $.ajax({
         url: "/update/",
         type: "POST",
-        dataType: "text", 
+        dataType: "json", 
         data: {
           place: $(".hidden_place").attr("id"),
           username : sessionStorage['logged_in'],
@@ -117,19 +112,75 @@ $(document).ready(function() {
           time : $(".hidden_time").attr("id"),
           },
         success: function(data) {
-          var lastChar = data[data.length-1]; 
-          if (lastChar != "N"){
+          var lastChar2 = data[data.length-1]; 
+          if (lastChar2 != "N"){
             $("#place").val("");
             $("#rating").val("");
             $("#cost").val("");
             $("#comment").val("");
             $("#status").css("color","green");
           }
-          $("#status").html(data.substring(0,data.length-1)); 
+
+          $("#hidden_form").css("display","none");
+          var usernameID=data[0].username;
+          var e=data[0];
+          var myID=data[0].time.replace(/[^a-z0-9]/gi,'');
+          $("#"+myID).empty();
+
+          var lastChar = -1;
+          for (var i = 0; i <= dict.length; i++) {
+            
+            if (dict[String(i)] == e.time) {
+              lastChar = String(i);
+              break;
+            }
+          }
+
+          var placeID="placeLink"+lastChar;
+          var updateID = e.username + "*" + e.place+"*"+lastChar;
+          var deleteID = e.username + "*" + e.place+"*"+lastChar;
+
+          $("#"+myID).append("<li class='list_username'>" + e.username + "</li>" +
+        "<li class='list_place'>wrote a review for " + 
+        "<a class='place' id="+placeID+">"+e.place+"</a>" + "</li><br>" +
+        "<img class='list_rating' src="+getCurrentStarURL(e.rating)+">" +
+        "<img class='list_cost' src="+getCurrentCostURL(e.cost)+">" + 
+        "<li class='list_time'>" + e.time + "</li>" +  
+        "<div><li class='list_comment'>"+ e.comment + "</li></div>" +
+           "<a type='button' class='btn btn-primary update' id="+updateID+">Update Review</a>"+
+        "<a type='button' class='btn btn-primary delete' id="+deleteID+">Delete Review</a>");
+
           // $("#hidden_form").css("display","none");
-          window.location = "/profile.html";
+          // window.location = "/profile.html";
           // $("#hidden_comment_block").attr("display:block;");
 
+        },
+      });
+    });
+
+
+  // "Delete" button clicked inside the update form
+  $("#topPlaces").on('click','.delete',function(event) {
+      var clicked = event.target.id;
+      var lastChar = clicked[clicked.length-1];
+      var myTime = dict[lastChar];
+      var args=clicked.split("*");
+      var myUsername = myUsername=args[0];
+      var myPlace = myPlace=args[1].replace("#"," ");
+
+      console.log("not broken");
+      $.ajax({
+        url: "/delete/",
+        type: "POST",
+        dataType: "text", 
+        data: {
+          username : myUsername,
+          time : myTime,
+          },
+        success: function(data) {
+          console.log(data);
+          // $("#hidden_form").css("display","none");
+          $("#"+myTime.replace(/[^a-z0-9]/gi,'')).empty();
         },
       });
     });
@@ -146,14 +197,15 @@ $(document).ready(function() {
 function outputSpecificPlaces(data){
   for (var i = data.length-1; i >= 0; i--){
     var e = data[i];
+    var myID=e.time.replace(/[^a-z0-9]/gi,'');
     var placeID = "placeLink" + i;
-    var updateID = e.place.replace(" ","*****") + i; 
+    var updateID = e.username + "*" + e.place.replace(" ","#")+"*"+i; 
     var commentBlockID = "commentBlockID" + i;
     dict[i] = e.time;
 
     $('#topPlaces').append(
       "<div id="+commentBlockID+">"+
-      "<ul class='list_ul'>" +
+      "<ul class='list_ul' id="+myID+">" +
         "<li class='list_username'>" + e.username + "</li>" +
         "<li class='list_place'>wrote a review for " + 
         "<a class='place' id="+placeID+">"+e.place+"</a>" + "</li><br>" +
@@ -238,7 +290,7 @@ function outputSpecificPlaces(data){
     </div>
     <div id="buttons_div">
       <a type="button" class="btn btn-primary" id="update">Update</a>
-      <a href="/" type="button" class="btn btn-primary">Cancel</a>
+      <a type="button" class="btn btn-primary" id="cancel">Cancel</a>
     </div>
 
     <div id="status"></div>

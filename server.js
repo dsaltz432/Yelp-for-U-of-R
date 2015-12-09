@@ -22,7 +22,7 @@ db.serialize(function() {
 
 	db.run("CREATE TABLE if not exists places_table "+
 		"(username TEXT NOT NULL,place TEXT NOT NULL,comment TEXT NOT NULL,rating TEXT NOT NULL,"+
-			"cost TEXT NOT NULL,time TEXT NOT NULL)");
+			"cost TEXT NOT NULL,time TEXT NOT NULL, CONSTRAINT place_key PRIMARY KEY (username, time))");
 
 /***********************************************
 	Handling requests from accounts.html
@@ -119,9 +119,9 @@ db.serialize(function() {
 	// returns the row of the element to be updated
 	app.get('/fillForm/', function (req, res) {
 		var myTime = req.query.time;
-		var myPlace = req.query.place;
-		db.all("SELECT * FROM places_table WHERE time = ? AND place = ?",
-		 [myTime,myPlace] ,function(err,row){
+		var myUsername = req.query.username;
+		db.all("SELECT * FROM places_table WHERE time = ? AND username = ?",
+		 [myTime,myUsername] ,function(err,row){
 			if (err != null){ res.send("An error occurred.") }
 			else { res.send(row);}	
 		});
@@ -137,7 +137,6 @@ db.serialize(function() {
 		var rating = postBody.rating;
 		var cost = postBody.cost;
 		var oldTime = postBody.time;
-		var newTime = getDay();
 
 		if (!comment || !rating || !cost){
 			if (!comment){ res.send("Enter a commentN"); }
@@ -145,13 +144,33 @@ db.serialize(function() {
 			else if (!cost){ res.send("Enter a costN"); }
 		} else {
 			db.run("UPDATE places_table SET " + 
-				"comment = ?, rating = ?, cost = ?, time = ? " + 
-				"WHERE time = ? AND username = ?", [comment,rating,cost,newTime,oldTime,username], function(err, row) {
+				"comment = ?, rating = ?, cost = ? " + 
+				"WHERE (time = ? AND username = ?)", [comment,rating,cost,oldTime,username], function(err, row) {
 				if (err != null){ res.send("Failed to update placeN");}
-				else { res.send("Place updated!Y"); }
+				else { 
+					var bob=null;
+					db.all("SELECT * FROM places_table WHERE (time = ? AND username = ?)", [oldTime, username], function(err, row) {
+						if (err != null){ res.send("Failed to update placeN");}
+						else { res.send(row);}
+					});
+				 }
 			});	
 		}
 	});
+
+// "Delete" button clicked inside of update form
+	app.post('/delete', function (req, res) {
+		var postBody = req.body;
+		var myUsername = postBody.username;
+		var myTime = postBody.time;
+
+		db.run("DELETE FROM places_table WHERE " + 
+			"time = ? AND username = ?", [myTime,myUsername], function(err, row) {
+			if (err != null){ res.send("Failed to update placeN"); }
+			else { res.send("Deleted!"); }
+		});	
+	});
+
 /***********************************************
 	Handling requests from newplace.html
 ************************************************/
