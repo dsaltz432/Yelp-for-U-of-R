@@ -9,7 +9,6 @@
 <link rel="stylesheet" type="text/css" href="css/MainStyles.css">
 <link rel="stylesheet" type="text/css" href="css/NewPlace.css">
 <script src = "PagewideJS.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js"></script>
 
 
 <script>
@@ -51,42 +50,51 @@
         address: $("#address").val(),
         },
       success: function(data) {
-        if (data=="none"){
-          $("#address_div").css("display","block"); 
+        if (data.startsWith('Place adde')){
+          window.location = "/";
+        } 
+        else if (String(data) == "none") {
+          $("#address_div").css("display","block");
           $("#status").html("This place is new, enter an address!");
-        } else {
-            // if (!mapExists($("#address_div").val())){
-            //   $("#status").html("Please enter a valid street name");
-            // } else {
-            //   window.location = "/";
-            // }
-            window.location="/";
+        } 
+        else {
+          $("#status").html(data);
         }
+
       },
     });
   });
  });
 
-// function mapExists(address){
-//   var map = new google.maps.Map(document.getElementById('address_div'), {
-//   zoom: 13,
-//   center: {lat: 43.1283, lng: -77.6283}
-//   });
-//   var geocoder = new google.maps.Geocoder();
-//   geocoder.geocode({'address': address}, function(results, status) {
-//     var marker = new google.maps.Marker({
-//       // map: resultsMap,
-//       // position: results[0].geometry.location
-//     });
-//     // return marker;
-//   if (marker){
-//     return 1;
-//   } else {
-//     return 0;
-//   }
-//   });
+function mapExists(address){
+  console.log("here");
+  var map = new google.maps.Map(document.getElementById('address_div'), {
+  zoom: 13,
+  center: {lat: 43.1283, lng: -77.6283}
+  });
+  var geocoder = new google.maps.Geocoder();
+  geocoder.geocode({'address': address}, function(results, status) {
 
-// }
+    console.log("results: " + results);
+    if (results.length > 0){
+      return 1;
+    } else {
+      return 0;
+    }
+    // var marker = new google.maps.Marker({
+      // map: resultsMap,
+      // position: results[0].geometry.location
+    });
+    // return marker;
+  // if (marker){
+  //   return 1;
+  // } else {
+  //   return 0;
+  // }
+  // });
+
+}
+
 
 </script>
 
@@ -151,8 +159,7 @@
       <textarea id="comment" type="text" style="width: 70%; height:15%"></textarea><br/>
     </div>
     <div id="address_div" style = "display:none;">
-      Street Name: <input id="address" type="text" size="20"/>
-    </div>
+      Please Enter a Street Name: <input id="address" type="text" size="20"/>
     </div>
     <div id="buttons_div">
       <a type="button" class="btn btn-primary" id="add">Add</a>

@@ -57,6 +57,7 @@ $(document).ready(function() {
 
           } else {
             sessionStorage["restaurant"] = $("#search").val();
+            // sessionStorage["recentPage"] = "/restaurants.html";
             window.location = "/restaurants.html";
           }
         },

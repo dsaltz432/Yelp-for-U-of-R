@@ -50,10 +50,13 @@ source: https://developers.google.com/maps/documentation/javascript/examples/geo
 
 function geocodeAddress(geocoder, resultsMap, address) {
   geocoder.geocode({'address': address}, function(results, status) {
+    // console.log(results);
+
     var marker = new google.maps.Marker({
       map: resultsMap,
       position: results[0].geometry.location
     });
+  // console.log(marker);
 
   });
 }
