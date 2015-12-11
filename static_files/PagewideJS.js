@@ -23,7 +23,14 @@ $(document).ready(function() {
       sessionStorage.removeItem("logged_in");
     });
 
+    // clear search bar
+    $("#search").val("");
 
+  // clear session storage for restaurant when "restaurant" is clicked
+  $("#restaurantsButton").click(function(){
+    sessionStorage.removeItem("restaurant");
+    window.location = "/restaurants.html";
+  });
 
 /***********************************************
       Ajax requests to the server
@@ -34,7 +41,7 @@ $(document).ready(function() {
       alert("Sorry, there was a problem!");
     });
 
-// search bar functionality
+/*  search bar functionality */
   $("#go").click(function() { 
     if ($("#search").val().length > 0){ // if the search bar isn't empty
       $.ajax({
@@ -43,13 +50,14 @@ $(document).ready(function() {
         dataType: "json", 
         success: function(data) {                           
           if (data == "0"){ // place not found, redirect so user can add it
-            window.location = "/newplace.html";
-          } else {
-            $('#topPlaces').empty();
-            $("#popular").html("Recent Reviews of " + $("#search").val());
-            $("#search").val("");
-            outputSpecificPlaces(data);
 
+            // set sessionStorage to know where the request came from
+            sessionStorage["fromSearch"] = $("#search").val();
+            window.location = "/newplace.html";
+
+          } else {
+            sessionStorage["restaurant"] = $("#search").val();
+            window.location = "/restaurants.html";
           }
         },
       });
@@ -57,7 +65,6 @@ $(document).ready(function() {
   });
 
 });
-
 
 /***********************************************
      Helper JavaScript functions

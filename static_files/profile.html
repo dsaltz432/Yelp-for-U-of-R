@@ -27,6 +27,7 @@ window.dict = new Array();
 
 $(document).ready(function() {
 
+
 /***********************************************
       Ajax requests to the server
 ************************************************/
@@ -41,24 +42,16 @@ $(document).ready(function() {
     },
   });
 
-  // link of place is clicked
+  // link of place is clicked, go to restaurants.html
+  // set session storage so restaurants.html knows which place to load
   $("#topPlaces").on('click','.place',function(event) {
     var clicked = event.target.id;
     if (clicked.indexOf(0) != "#"){ // controlling how many # there are
       clicked = "#" + clicked;
     } 
     var placeName = $(clicked).html();
-    $.ajax({
-      url: "/places/" + placeName,
-      type: "GET",
-      dataType: "json", 
-      success: function(data) {
-        $('#popular').html("Reviews of " + placeName);
-        $('#topPlaces').empty();
-        $("#popular").html("Recent Reviews of " + placeName);
-        outputSpecificPlaces(data);
-      },
-    });
+    sessionStorage["restaurant"] = placeName;
+    window.location = "/restaurants.html";
   });
 
 // "Update Review" clicked
@@ -68,9 +61,9 @@ $(document).ready(function() {
     var myTime = dict[lastChar];
     var args=clicked.split("*");
     var myUsername = myUsername=args[0];
-    var myPlace = myPlace=args[1].replace("#"," ");
+    var myPlace = args[1].replace("#"," ");
     
-    var id = "#commentBlockID"+parseInt(lastChar);
+    var id = "#comment_block"+parseInt(lastChar);
     $(".hidden_place").attr("id",myPlace);
     $(".hidden_time").attr("id",myTime);
     $("#hidden_form").insertAfter(id);
@@ -89,7 +82,6 @@ $(document).ready(function() {
         var stars = parseInt(e.rating[0])+1;
         var dollars = e.cost[0];
         $("#hidden_form").css("display","block");
-        // $("#popular").html("Updating Review for " + myPlace);
         $("#rating option:eq("+stars+")").prop('selected', true);
         $("#cost option:eq("+dollars+")").prop('selected', true);
         $("#comment").val(e.comment);
@@ -99,6 +91,7 @@ $(document).ready(function() {
 
   // "Update" button clicked inside the update form
    $("#update").click(function() {
+    console.log("here");
       $.ajax({
         url: "/update/",
         type: "POST",
@@ -137,23 +130,19 @@ $(document).ready(function() {
           }
 
           var placeID="placeLink"+lastChar;
-          var updateID = e.username + "*" + e.place+"*"+lastChar;
-          var deleteID = e.username + "*" + e.place+"*"+lastChar;
+          var updateID = e.username + "*" + e.place.replace(" ","#")+"*"+lastChar;
+          var deleteID = e.username + "*" + e.place.replace(" ","#")+"*"+lastChar;
 
-          $("#"+myID).append("<li class='list_username'>" + e.username + "</li>" +
-        "<li class='list_place'>wrote a review for " + 
-        "<a class='place' id="+placeID+">"+e.place+"</a>" + "</li><br>" +
-        "<img class='list_rating' src="+getCurrentStarURL(e.rating)+">" +
-        "<img class='list_cost' src="+getCurrentCostURL(e.cost)+">" + 
-        "<li class='list_time'>" + e.time + "</li>" +  
-        "<div><li class='list_comment'>"+ e.comment + "</li></div>" +
-           "<a type='button' class='btn btn-primary update' id="+updateID+">Update Review</a>"+
-        "<a type='button' class='btn btn-primary delete' id="+deleteID+">Delete Review</a>");
-
-          // $("#hidden_form").css("display","none");
-          // window.location = "/profile.html";
-          // $("#hidden_comment_block").attr("display:block;");
-
+          $("#"+myID).append(
+            "<li class='list_username'>" + e.username + "</li>" +
+            "<li class='list_place'>wrote a review for " + 
+            "<a class='place' id="+placeID+">"+e.place+"</a>" + "</li><br>" +
+            "<img class='list_rating' src="+getCurrentStarURL(e.rating)+">" +
+            "<img class='list_cost' src="+getCurrentCostURL(e.cost)+">" + 
+            "<li class='list_time'>" + e.time + "</li>" +  
+            "<div><li class='list_comment'>"+ e.comment + "</li></div>" +
+               "<a type='button' class='btn btn-primary update' id="+updateID+">Update Review</a>"+
+            "<a type='button' class='btn btn-primary delete' id="+deleteID+">Delete Review</a>");
         },
       });
     });
@@ -178,12 +167,15 @@ $(document).ready(function() {
           time : myTime,
           },
         success: function(data) {
-          console.log(data);
-          // $("#hidden_form").css("display","none");
           $("#"+myTime.replace(/[^a-z0-9]/gi,'')).empty();
         },
       });
     });
+
+  // hide form on "cancel" click
+  $("#cancel").click(function(){
+    $("#hidden_form").css("display","none");
+  })
 
 
 /***********************************************
@@ -200,11 +192,11 @@ function outputSpecificPlaces(data){
     var myID=e.time.replace(/[^a-z0-9]/gi,'');
     var placeID = "placeLink" + i;
     var updateID = e.username + "*" + e.place.replace(" ","#")+"*"+i; 
-    var commentBlockID = "commentBlockID" + i;
+    var comment_block = "comment_block" + i;
     dict[i] = e.time;
 
     $('#topPlaces').append(
-      "<div id="+commentBlockID+">"+
+      "<div class="+comment_block+">"+
       "<ul class='list_ul' id="+myID+">" +
         "<li class='list_username'>" + e.username + "</li>" +
         "<li class='list_place'>wrote a review for " + 
@@ -232,6 +224,16 @@ function outputSpecificPlaces(data){
     <div id="header_bar">
       <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
 
+    <!-- Sign up, login, logout buttons -->
+      <div id="buttons">
+        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
+        <h2 id="hello"></h2>
+        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
+        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
+        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
+        <a type="button" class="btn btn-primary" id="restaurantsButton">Restaurants</a>
+      </div>
+
       <!-- creating a search bar through bootstrap -->
       <div class="input-group" id="search_bar">
         <input id="search" type="text" class="form-control" placeholder="Search for a place...">
@@ -240,21 +242,12 @@ function outputSpecificPlaces(data){
         </div>
       </div>
 
-    <!-- Sign up, login, logout buttons -->
-      <div id="buttons">
-        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
-        <h2 id="hello"></h2>
-        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
-        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
-        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
-      </div>
     </div>
   </div>
 
   <div id="container"> 
+    <a href="/newplace.html" type="button" class="b btn btn-primary btn-lg" id="review">Write a Review</a>
     <h3 id="popular">Recent Reviews</h3>
-    <a href="/newplace.html" type="button" class="btn btn-primary btn-lg" id="review">Write a Review</a>
-
 
   <div id="hidden_form" style="display:none;"> 
   <div id="content">
@@ -289,8 +282,8 @@ function outputSpecificPlaces(data){
       <textarea id="comment" type="text" style="width: 70%; height:15%"> </textarea> <br />
     </div>
     <div id="buttons_div">
-      <a type="button" class="btn btn-primary" id="update">Update</a>
-      <a type="button" class="btn btn-primary" id="cancel">Cancel</a>
+      <a type="button" class="b btn btn-primary" id="update">Update</a>
+      <a type="button" class="b btn btn-primary" id="cancel">Cancel</a>
     </div>
 
     <div id="status"></div>

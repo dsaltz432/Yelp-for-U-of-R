@@ -10,27 +10,38 @@
   #buttons { 
   	margin-top: 20px;
   	display: block;
+    font: 40px 'Courier New';
+
   }
   #wrap{
   	margin-bottom: 30px;
   	padding-bottom: 25px;
   }
 
-  #username, #password{ margin-top: 20px; }
+  #username, #password{ 
+    margin-top: 20px;
+    font: 20px 'Courier New';
+
+     }
   #login{ margin: 20px 0 0 40px;}
   #home{ margin: 20px 0 0 2px;}
   #status{margin: 20px 0 0 20px;}
   #container{
     padding: 25px 0 180px 0;
     border-radius: 10px;
+    background-color: white;
   }
 
   #signup{
     margin-left: 40px;
     margin-top: 10px;
-
   }
 
-/*  #yelp a:hover {
-    list-style-type: none;
-  }*/
+#login_header{
+  margin-left: 28px;
+  font: 40px 'Courier New';
+}
+
+#search_bar{
+  margin-left: 35%;
+}

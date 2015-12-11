@@ -33,12 +33,18 @@ $(document).ready(function() {
               password: $("#passwordField").val(),
              },
       success: function(data) {
-        var lastChar = data[data.length-1]; 
-        if (lastChar == "Y"){
+        if (data.startsWith('Logging')){
           sessionStorage["logged_in"] = $("#usernameField").val(); 
-          window.location = "/";
+
+          // redirect to newplace.html or homepage
+          if (sessionStorage["fromSearch"]){
+            window.location = "/newplace.html";
+          } else {
+            window.location = "/";
+          }
+
         } else {
-         $("#status").html(data.substring(0,data.length-1)); 
+         $("#status").html(data); 
         }
       },
     });
@@ -54,13 +60,12 @@ $(document).ready(function() {
                password: $("#passwordField").val(),
              },
       success: function(data) {
-        var lastChar = data[data.length-1];
-        if (lastChar == "Y"){
-            $("#passwordField").val("");
-            $("#usernameField").val("");    
+        if (data.startsWith('You created')) {
+          $("#passwordField").val("");
+          $("#usernameField").val("");    
         } 
-        $("#status").html(data.substring(0,data.length-1)); 
-      },
+          $("#status").html(data); 
+       },
     });
   });
 });
@@ -74,7 +79,6 @@ $(document).ready(function() {
     <div id="header_bar">
     <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
 
-
       <!-- creating a search bar through bootstrap -->
       <div class="input-group" id="search_bar">
         <input id="search" type="text" class="form-control" placeholder="Search for a place...">
@@ -86,14 +90,15 @@ $(document).ready(function() {
   </div> <!-- end wrap -->
 
   <div id="container"> 
+    <h2 id="login_header">Log In</h2>
   	<div id="username">Username: <input id="usernameField" type="text" size="20"/></div>
   	<div id="password">Password: <input id="passwordField" type="password" size="20"/></div>
 
   	<div id="buttons">
-      <button type="button" class="btn btn-primary btn-lg" id="signup">Create</button>
+      <button type="button" class="btn btn-primary btn-lg" id="signup">Create New Account</button>
       <br>
-  		<button type="button" class="btn btn-primary" id="login">Log In</button>
-  		<a href="/" type="button" class="btn btn-primary" id="home">Home</a>
+  		<button type="button" class="btn btn-primary btn-lg" id="login">Log In</button>
+  		<a href="/" type="button" class="btn btn-primary btn-lg" id="home">Home</a>
     </div>
 
       <!-- outputs status for success or failure -->

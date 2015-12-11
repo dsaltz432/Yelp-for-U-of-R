@@ -11,7 +11,6 @@ var db = new sqlite3.Database("users.db");
 
 db.serialize(function() {
 
-
 /***********************************************
 		Creating tables in users.db database
 ************************************************/
@@ -24,6 +23,10 @@ db.serialize(function() {
 		"(username TEXT NOT NULL,place TEXT NOT NULL,comment TEXT NOT NULL,rating TEXT NOT NULL,"+
 			"cost TEXT NOT NULL,time TEXT NOT NULL, CONSTRAINT place_key PRIMARY KEY (username, time))");
 
+	db.run("CREATE TABLE if not exists place_info_table " +
+			"(place TEXT NOT NULL, address TEXT, link TEXT, PRIMARY KEY (place))"
+		);
+
 /***********************************************
 	Handling requests from accounts.html
 ************************************************/
@@ -32,45 +35,74 @@ db.serialize(function() {
 	app.get('/users/*', function (req, res) {
 		var myUsername = req.query.username;
 		var myPassword = req.query.password;
-		if (!myUsername && !myPassword){ res.send("Enter the required fieldsN");}
-		else if (!myUsername){res.send("Enter your usernameN");}
-		else if (!myPassword){res.send("Enter your passwordN");}
+		if (!myUsername && !myPassword){ res.send("Enter the required fields");}
+		else if (!myUsername){res.send("Enter your username");}
+		else if (!myPassword){res.send("Enter your password");}
 		else {
-			//assumes that there cannot be duplicate usernames
 			db.all("SELECT * FROM users_table WHERE username = ?" +
 			" AND password = ?", [myUsername,myPassword], function(err,row){
 				if (row.length < 1){ // checks for empty list
 					res.send("Either you typed incorrect information, "+
 					 "or you have not yet created an account. To create a "+ 
 					 "new account, enter your desired username and password, "+
-					 "and click Create New Account.N");	
+					 "and click Create New Account.");	
 				} else {
-					res.send("Logging you in!Y");
+					res.send("Logging you in!");
 				}
 			});
 		}
 	});
 
-	// "Sign Up" clicks
+		// "Sign Up" clicks
 	app.post('/users', function (req, res) {
 		var postBody = req.body;
 		var myUsername = postBody.username;
 		var myPassword = postBody.password;
 
-		if (!myUsername && !myPassword){ res.send("Enter the required fieldsN");}
-		else if (!myUsername){ res.send("Enter your usernameN");}
-		else if (!myPassword){ res.send("Enter your passwordN");}
+		if (!myUsername && !myPassword){ res.send("Enter the required fields");}
+		else if (!myUsername){ res.send("Enter your username");}
+		else if (!myPassword){ res.send("Enter your password");}
+		else if (myUsername.indexOf("#") > -1) {res.send("Hashtags are not allowed in username");}
+		else if (myUsername.indexOf(".") > -1) {res.send("Periods are not allowed in username");}
 		else {
 			// making sure username and passwords are valid
 			if (myPassword.length < 7){
 				res.send("Your password must be longer than 7 characters");
 			} else {	
 				db.run("INSERT INTO users_table VALUES (?,?)",[myUsername,myPassword], function(err, row) {
-					if (err != null){ res.send("Failed to create new accountN");}
-					else { res.send("Your created a new account!Y");}
+					if (err != null){ res.send("Failed to create new account");}
+					else { res.send("You created a new account!");}
 				});	
 			}
 		}
+	});
+
+
+/***********************************************
+	Handling requests from restaurants.html
+************************************************/
+
+	app.get("/restaurants/", function (req, res) {
+		db.all("SELECT place FROM place_info_table", function(err, row) {
+			if (err!= null) { res.send("ERROR"); }
+			else { res.send(row); }
+		});
+	});
+
+	app.get("/restaurants/*", function (req, res){
+		var rest= req.params[0];
+		db.all("SELECT * FROM place_info_table where place = ?", [rest], function(err, row){
+			if (err!= null) { res.send("ERROR"); }
+			else { res.send(row); }
+		});
+	});
+
+	app.get("/restaurantComments/*", function (req, res){
+		var rest= req.params[0];
+		db.all("SELECT * FROM places_table where place = ?", [rest], function(err, row){
+			if (err!= null) { res.send("ERROR"); }
+			else { res.send(row); }
+		});
 	});
 
 
@@ -122,11 +154,10 @@ db.serialize(function() {
 		var myUsername = req.query.username;
 		db.all("SELECT * FROM places_table WHERE time = ? AND username = ?",
 		 [myTime,myUsername] ,function(err,row){
-			if (err != null){ res.send("An error occurred.") }
+			if (err != null){ res.send("An error occurred."); }
 			else { res.send(row);}	
 		});
 	});
-
 
 	// "Update" button clicked inside of update form
 	app.post('/update', function (req, res) {
@@ -183,19 +214,27 @@ db.serialize(function() {
 		var comment = postBody.comment;
 		var rating = postBody.rating;
 		var cost = postBody.cost;
+		var address=postBody.address;
 		var time = getDay();
 
 		if (!place || !comment || !rating || !cost){
-			if (!place){ res.send("Enter a placeN"); } 
-			else if (!comment){ res.send("Enter a commentN"); }
-			else if (!rating){ res.send("Enter a ratingN"); }
-			else if (!cost){ res.send("Enter a costN"); }
+			if (!place){ res.send("Enter a place"); } 
+			else if (!comment){ res.send("Enter a comment"); }
+			else if (!rating){ res.send("Enter a rating"); }
+			else if (!cost){ res.send("Enter a cost"); }
 		} else {
-			db.run("INSERT INTO places_table VALUES (?,?,?,?,?,?)",
-			[username,place,comment,rating,cost,time], function(err, row) {
-				if (err != null){ res.send("Failed to add placeN");}
-				else { res.send("Place added!Y"); }
-			});	
+			db.all("SELECT * FROM place_info_table WHERE place = ?", [place], function(err, row) {
+				if (row.length==0 && address=="") { res.send("none");}
+				else {
+					db.run("INSERT INTO places_table VALUES (?,?,?,?,?,?)",
+					[username,place,comment,rating,cost,time], function(err, row) {
+						if (err != null){ res.send("Failed to add place");}
+						else { 
+							db.run("INSERT INTO place_info_table VALUES(?,?,NULL)", [place,address], function(err,row){});
+							res.send("Place added!"); }
+					});
+				}
+			});
 		}
 	});
 

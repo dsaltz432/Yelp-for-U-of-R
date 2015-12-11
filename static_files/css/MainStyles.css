@@ -19,15 +19,15 @@ body{
 	background-color: #0040ff;
 	padding-bottom: 20px
 }
-#header_bar{ margin: 0 1% 0 3%; }
+#header_bar{ margin: -20px 1% 0 3%; }
 
 
 /***********************************************
 			Styling the blue header bar
 ************************************************/
 
-#yelp,#buttons,#search_bar{display:inline-block;}
-#signup{margin: 5px 0 5px 0px;}
+#search_bar,#buttons{ display:inline-block;}
+#signup{margin: 5px 0 5px 45px;}
 #login{margin: 0 0 5px 17px;}
 #search{color:black;}
 #search_bar, #yelp, #buttons{ margin-bottom: 15px; }
@@ -40,8 +40,8 @@ body{
 
 #search,#go{display: block;}
 #search_bar {
-	width:40%;
-	margin:0 10% 0 5%;
+	width:45%;
+	margin:0 10% 30px 15%;
 	color:white;
 }
 
@@ -50,12 +50,7 @@ body{
 			Styling the list of places
 ************************************************/
 
-#review{
-	/*margin: 5px 0 0 14%;*/
-	margin-left: 2%;
-	margin-bottom: 20px;
-}
-
+#review{ margin: 20px 0 20px 2%;}
 #topPlaces{ padding-bottom: 20px;}
 
 #topPlaces ul {
@@ -74,7 +69,7 @@ body{
 .list_rating, .list_cost,.list_time{margin: 5px 25px 5px 0px;}
 .list_comment{margin: 5px 15px 5px 0px;}
 
-.comment_block{
+div[class^="comment_block"] {
 	background-color: white;
 	margin:25px 25px 25px 0;
 	border-radius: 15px;
@@ -87,20 +82,21 @@ body{
 
 
 #popular{
-	color: #d7ceb2;
-	text-shadow: 3px 3px 0px #2c2e38, 5px 5px 0px #5c5f72;
-	font: 40px 'BazarMedium';
-	letter-spacing: 10px;
+	font: 40px 'Courier New';
 	margin-left: 2%;
+	margin-top: 35px;
 }
 
 #yelp{
 	text-shadow: 0px 1px 0px #999, 0px 2px 0px #888, 0px 3px 0px #777, 0px 4px 0px #666, 0px 5px 0px #555, 0px 6px 0px #444, 0px 7px 0px #333, 0px 8px 7px #001135;
 	font: 45px 'ChunkFiveRegular';
+	padding-top: 10px;
 }
 
 /***********************************************
-				Other Styles
+	Changing font on buttons
 ************************************************/
-#popular{ margin-top: 35px;}
-#review{ margin-top: 20px;}
+.b {
+	font: 35px 'Courier New';
+}
+

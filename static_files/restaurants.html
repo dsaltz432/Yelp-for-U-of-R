@@ -1,0 +1,242 @@
+<!-- 
+-Used to dynamically create li items
+http://stackoverflow.com/questions/1145208/jquery-how-to-add-li-in-an-existing-ul
+
+ -->
+
+<!DOCTYPE html>
+<head>
+<title>Yelp for U of R</title>
+
+<!-- include jQuery, bootstrap, and MyStyles --> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="css/MainStyles.css">
+<link rel="stylesheet" type="text/css" href="css/RestaurantStyles.css">
+<script src="jquery-1.11.3.min.js"></script>
+<script src = "PagewideJS.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<script>
+/* Google API Key:
+AIzaSyCNL-dF5Wb5LiLFdTIwG9pWBx8ah3VgLU4
+*/
+
+
+// dictionary mapping place to index in drop down menu
+window.places = new Array();
+
+$(document).ready(function() {
+
+
+/***********************************************
+      Google Maps Geocoding API
+
+source: https://developers.google.com/maps/documentation/javascript/examples/geocoding-simple
+************************************************/
+
+  function initMap(address){
+    var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 13,
+    center: {lat: 43.1283, lng: -77.6283}
+    });
+    var geocoder = new google.maps.Geocoder();
+
+    // if (geocoder){
+      geocodeAddress(geocoder, map,address);
+    // } else {
+    //   var response = 0;
+    // }
+  }
+
+function geocodeAddress(geocoder, resultsMap, address) {
+  geocoder.geocode({'address': address}, function(results, status) {
+    var marker = new google.maps.Marker({
+      map: resultsMap,
+      position: results[0].geometry.location
+    });
+
+  });
+}
+
+/***********************************************
+      Manipulate DOM based off session storage
+************************************************/
+
+    if (sessionStorage['logged_in']){
+      $("#review").css("display","inline-block");
+    }
+
+/***********************************************
+      Ajax requests to the server
+************************************************/
+    
+  $.ajax({
+    url: "/restaurants/",
+    type: "GET",
+    dataType: "json", 
+    success: function(data){ 
+        var temp = "<h2 id='drop_down_restaurants'>Restaurant: "+
+         "<select id='restaurant'>"+
+         "<option value=''></option>";
+        for (var i = 0; i < data.length; i++){
+
+          // save the index in the dictionary
+          places[data[i].place] = i+1;
+
+            temp+="<option value="+data[i].place.replace(" ","#")+">"+data[i].place+"</option>";
+          }
+        temp+="</select></h2>";
+        $("#drop_down_restaurants").html(temp);  
+
+        // autofill the current restaurant in storage 
+        if (sessionStorage["restaurant"]){
+          $("#restaurant option:eq("+places[sessionStorage["restaurant"]]+")").prop('selected', true);
+        }
+    },
+  });
+
+// if restaurant already in session storage, load right away
+  if (sessionStorage["restaurant"]){
+
+    // get address from database
+      $.ajax({
+        url: "/restaurants/" + sessionStorage["restaurant"],
+        type: "GET",
+        dataType: "json",
+        success: function(data){
+          var address = data[0].address;
+          var link = data[0].link;
+
+          // draw map
+          initMap(address);
+
+        },
+      });
+
+     $.ajax({
+        url: "/restaurantComments/" + sessionStorage["restaurant"],
+        type: "GET",
+        dataType: "json",
+        success: function(data){
+          $("#topPlaces").empty();
+          outputPlaceData(data);
+        }
+      });
+  }
+
+
+    $(document).on("change", "#restaurant", function(){
+        var optionSelected = $("option:selected", this);
+        var place = this.value.replace("#"," ");
+
+        // set sessionStorage
+        sessionStorage["restaurant"] = place;
+
+        // get the address and link
+        $.ajax({
+          url: "/restaurants/" + place,
+          type: "GET",
+          dataType: "json",
+          success: function(data){
+            var address = data[0].address;
+            var link = data[0].link;
+            
+          // draw map
+          var response = initMap(address);
+
+          },
+        });
+
+      // get the list of comments for that place
+       $.ajax({
+          url: "/restaurantComments/" + sessionStorage["restaurant"],
+          type: "GET",
+          dataType: "json",
+          success: function(data){
+            $("#topPlaces").empty();
+            outputPlaceData(data);
+          }
+        });
+
+
+    });
+
+/***********************************************
+     Dynamically generate HTML
+************************************************/
+
+function outputPlaceData(data){
+  for (var i = data.length-1; i >= 0; i--){
+    var e = data[i];
+    var placeID = "placeLink" + i;
+    $('#topPlaces').append(
+      "<div class='comment_block'>"+
+      "<ul class= = 'list_ul'>" +
+        "<li class='list_username'>" + e.username + "</li>" +
+        "<li class='list_place'>wrote a review for " + 
+        "<a id="+placeID+">"+e.place+"</a>" + "</li><br>" +
+        "<img class='list_rating' src="+getCurrentStarURL(e.rating)+">" +
+        "<img class='list_cost' src="+getCurrentCostURL(e.cost)+">" + 
+        "<li class='list_time'>" + e.time + "</li>" +  
+        "<div><li class='list_comment'>"+ e.comment + "</li></div>" +
+      "</ul>"+
+      "</div>"
+      );
+  }
+}
+
+});
+
+
+</script>
+
+<style>
+  #map {
+    width:500px;
+    height:400px;
+  }
+
+</style>
+
+</head>
+  <body>
+ 
+ <div id="wrap">
+    <div id="header_bar">
+      <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
+
+    <!-- Sign up, login, logout buttons -->
+      <div id="buttons">
+        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
+        <h2 id="hello"></h2>
+        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
+        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
+        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
+        <a href="/restaurants.html" type="button" class="btn btn-primary" id="restaurantsButton">Restaurants</a>
+      </div>
+
+      <!-- creating a search bar through bootstrap -->
+      <div class="input-group" id="search_bar">
+        <input id="search" type="text" class="form-control" placeholder="Search for a place...">
+        <div id="go" class="input-group-btn">
+          <button class="btn btn-default" type="button">Go!</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="container"> 
+    <a href="/newplace.html" type="button" class="b btn btn-primary btn-lg" id="review" style="display:none;">Write a Review</a>
+    <h2 id='drop_down_restaurants' class="b"></h2>
+    <div id="address_content"></div>
+    <div id="map" style="width:400px; height:400px"></div>
+    <div id="link_content"></div>
+
+  <!-- Dynamically outputs the list of places -->
+    <ul id="topPlaces"></ul>
+
+  </div>  <!-- end of container -->
+
+  </body>
+</html>

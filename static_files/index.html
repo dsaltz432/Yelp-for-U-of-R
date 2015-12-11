@@ -35,26 +35,18 @@ $(document).ready(function() {
     },
   });
 
-  // runs when a place link is clicked from the home page
+  // link of place is clicked, go to restaurants.html
+  // set session storage so restaurants.html knows which place to load
   $("#topPlaces").on('click','a',function(event) {
-    var clicked = event.target.id;
+    console.log("clicked");
+   var clicked = event.target.id;
     if (clicked.indexOf(0) != "#"){ // controlling how many # there are
       clicked = "#" + clicked;
     } 
     var placeName = $(clicked).html();
-    $.ajax({
-      url: "/places/" + placeName,
-      type: "GET",
-      dataType: "json", 
-      success: function(data) {
-        $('#popular').html("Reviews of " + placeName);
-        $('#topPlaces').empty();
-        $("#popular").html("Recent Reviews of " + placeName);
-        outputRecentPlaces(data);
-      },
-    });
+    sessionStorage["restaurant"] = placeName;
+    window.location = "/restaurants.html";
   });
-
 
 /***********************************************
      Dynamically generate HTML
@@ -80,6 +72,9 @@ function outputRecentPlaces(data){
   }
 }
 
+  $("#review").click(function(){
+    window.location = "/newplace.html";
+  });
 
 });
 
@@ -91,6 +86,15 @@ function outputRecentPlaces(data){
  <div id="wrap">
     <div id="header_bar">
       <h1 id="yelp"><a id="yelpA" href="/">Yelp for U of R</a></h1>
+    <!-- Sign up, login, logout buttons -->
+      <div id="buttons">
+        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
+        <h2 id="hello"></h2>
+        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
+        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
+        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
+        <a type="button" class="btn btn-primary" id="restaurantsButton">Restaurants</a>
+      </div>
 
       <!-- creating a search bar through bootstrap -->
       <div class="input-group" id="search_bar">
@@ -100,20 +104,15 @@ function outputRecentPlaces(data){
         </div>
       </div>
 
-    <!-- Sign up, login, logout buttons -->
-      <div id="buttons">
-        <div><a href="accounts.html" type="button" class="btn btn-primary btn-lg" id="signup">Sign Up</a></div>
-        <h2 id="hello"></h2>
-        <a href="accounts.html" type="button" class="btn btn-primary" id="login">Log In</a>
-        <a href="/" type="button" class="btn btn-primary" id="logout">Log Out</a>
-        <a href="/profile.html" type="button" class="btn btn-primary" id="profileButton">Profile</a>
-      </div>
     </div>
   </div>
 
-  <div id="container"> 
-    <h3 id="popular">Recenet Reviews</h3>
-    <a href="/newplace.html" type="button" class="btn btn-primary btn-lg" id="review" style="display:none;">Write a Review</a>
+  <div id="container">
+<!--     <h3> <a href="/restaurants.html" id="restaurantsButton" type="button" class="btn btn-primary btn-lg">Restaurants</a></h3>
+    <h3 id="popular">Recent Reviews</h3> -->
+    <a type="button" class="b btn btn-primary btn-lg" id="review" style="display:none;">Write a Review</a>
+    <h3 id="popular">Recent Reviews</h3>
+
 
     <!-- Dynamically outputs the list of places -->
       <ul id="topPlaces"></ul>
