@@ -4,7 +4,8 @@ var bodyParser = require('body-parser');
 var fuzzy = require('fuzzy');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-app.use(express.static('static_files'));
+app.use(express.static('public'));
+
 
 // importing sqlite and creating the database
 var sqlite3 = require("sqlite3").verbose();
@@ -25,8 +26,7 @@ db.serialize(function() {
 			"cost TEXT NOT NULL,time TEXT NOT NULL, CONSTRAINT place_key PRIMARY KEY (username, time))");
 
 	db.run("CREATE TABLE if not exists place_info_table " +
-			"(place TEXT NOT NULL, address TEXT, link TEXT, PRIMARY KEY (place))"
-		);
+			"(place TEXT NOT NULL, address TEXT, link TEXT, PRIMARY KEY (place))");
 
 /***********************************************
 	Handling requests from accounts.html
